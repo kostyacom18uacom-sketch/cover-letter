@@ -42,9 +42,11 @@ export default function CreateForm({ onChange }) {
   const handleGenerate = async () => {
     if (!company.trim()) return
 
-    const slug = slugify(company)
+    const slug = slugify(company) || 'company'
     const encoded = encodeData({ company: company.trim(), cards })
-    const url = `${window.location.origin}/${slug}?d=${encoded}`
+    // Явно беремо лише origin (protocol + host) без будь-якого pathname
+    const origin = `${window.location.protocol}//${window.location.host}`
+    const url = `${origin}/${slug}?d=${encoded}`
 
     try {
       await navigator.clipboard.writeText(url)
