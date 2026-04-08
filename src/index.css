@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Handjet:wght@500;600&display=swap');
+
+@font-face {
+  font-family: 'Mont';
+  src: url('/fonts/Mont-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #e0e3ff;
+  font-family: 'Mont', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@keyframes border-shimmer {
+  0% { background-position: 0% 0%, 0% 0%; }
+  100% { background-position: 0% 0%, 200% 0%; }
+}
+
+.win2k-shimmer {
+  background-image: linear-gradient(#EEE2FF, #EEE2FF), linear-gradient(90deg, #FBF8FF, #9171BF, #FBF8FF) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+  background-size: 100% 100%, 200% 100% !important;
+  border-image: none !important; /* Override border-image */
+  transition: box-shadow 0.15s ease, background-image 0.15s ease !important;
+}
+
+.win2k-shimmer:hover {
+  animation: border-shimmer 2s linear infinite;
+}
+
+.win2k-shimmer:active {
+  background-image: linear-gradient(#D6C4F0, #D6C4F0), linear-gradient(180deg, #9171BF 0%, #FBF8FF 100%) !important;
+  box-shadow: inset 1px 1px 3px rgba(42, 45, 101, 0.3) !important;
+}
