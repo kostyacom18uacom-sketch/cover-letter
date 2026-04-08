@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import Loader from './Loader.jsx'
 import Card from './Card.jsx'
@@ -19,6 +19,8 @@ export default function CardStack({ company, cards, onSwipe }) {
   const [direction, setDirection] = useState(0) // 0: loader-to-1, 1: next, -1: prev
   const [showNav, setShowNav] = useState(false)
   const [isNavigatingToFinal, setIsNavigatingToFinal] = useState(false)
+  // ref для синхронного читання в момент exit-анімації
+  const isNavigatingToFinalRef = useRef(false)
 
   const shouldReduceMotion = useReducedMotion()
 
@@ -29,14 +31,13 @@ export default function CardStack({ company, cards, onSwipe }) {
     setDirection(1)
     onSwipe && onSwipe('left')
     if (activeIndex === totalCards - 2) {
+      // Синхронно ставимо ref ДО оновлення index
+      isNavigatingToFinalRef.current = true
       setIsNavigatingToFinal(true)
       setShowNav(false)
-      // Small delay to ensure Card 5 re-renders with the "shredder" exit prop
-      // BEFORE it becomes the unmounting component.
-      setTimeout(() => {
-        setActiveIndex((prev) => Math.min(prev + 1, totalCards - 1))
-      }, 0)
+      setActiveIndex((prev) => Math.min(prev + 1, totalCards - 1))
     } else {
+      isNavigatingToFinalRef.current = false
       setIsNavigatingToFinal(false)
       setActiveIndex((prev) => Math.min(prev + 1, totalCards - 1))
     }
@@ -44,6 +45,7 @@ export default function CardStack({ company, cards, onSwipe }) {
 
   const goPrev = useCallback(() => {
     setDirection(-1)
+    isNavigatingToFinalRef.current = false
     setIsNavigatingToFinal(false)
     onSwipe && onSwipe('right')
     setActiveIndex((prev) => Math.max(prev - 1, 0))
@@ -126,7 +128,8 @@ export default function CardStack({ company, cards, onSwipe }) {
 
     if (!cardData) return null
     
-    const isGoingToShredder = isNavigatingToFinal;
+    // Читаємо ref синхронно — гарантовано актуальне значення в момент рендеру exit
+    const goingToShredder = isNavigatingToFinalRef.current
 
     const matchTitles = ['1st match', '2nd match', '3rd match', '4th match']
     const windowTitle = matchTitles[activeIndex - 1] || 'Cover Letter'
@@ -145,13 +148,13 @@ export default function CardStack({ company, cards, onSwipe }) {
         animate={flipAnimate}
         windowTitle={windowTitle}
         exit={
-          isGoingToShredder 
-            ? { y: "-150%", rotate: -5, opacity: 0, scale: 1.05 } 
+          goingToShredder
+            ? { y: '-150%', rotate: -5, opacity: 0, scale: 1.05 }
             : flipExit
         }
         transition={
-          isGoingToShredder
-            ? { duration: 1.0, ease: "anticipate" } // Slower, dramatic exit
+          goingToShredder
+            ? { duration: 1.0, ease: 'anticipate' }
             : springConfig
         }
       />
