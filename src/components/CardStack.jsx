@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { flushSync } from 'react-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import Loader from './Loader.jsx'
 import Card from './Card.jsx'
@@ -31,10 +32,15 @@ export default function CardStack({ company, cards, onSwipe }) {
     setDirection(1)
     onSwipe && onSwipe('left')
     if (activeIndex === totalCards - 2) {
-      // Синхронно ставимо ref ДО оновлення index
-      isNavigatingToFinalRef.current = true
-      setIsNavigatingToFinal(true)
-      setShowNav(false)
+      // flushSync форсує СИНХРОННИЙ ре-рендер картки з shredder exit
+      // ДО того як наступний setActiveIndex її unmountить.
+      // Без цього React 18 батчить setState і exit читається зі старого prop.
+      flushSync(() => {
+        isNavigatingToFinalRef.current = true
+        setIsNavigatingToFinal(true)
+        setShowNav(false)
+      })
+      // Тепер картка вже має exit: { y: '-150%' }, тепер unmountимо
       setActiveIndex((prev) => Math.min(prev + 1, totalCards - 1))
     } else {
       isNavigatingToFinalRef.current = false
